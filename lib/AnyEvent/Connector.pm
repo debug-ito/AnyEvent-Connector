@@ -96,8 +96,43 @@ option.
 
 =head2 $guard = $conn->tcp_connect($host, $port, $connect_cb, $prepare_cb)
 
-Make a TCP connection to the given C<$host> and C<$port>.
+Make a (possibly proxied) TCP connection to the given C<$host> and
+C<$port>.
 
+If C<< $conn->proxy_for($host, $port) >> returns C<undef>, the
+behavior of this method is exactly the same as C<tcp_connect> function
+from L<AnyEvent::Socket>.
+
+If C<< $conn->proxy_for($host, $port) >> returns a proxy URL, it
+behaves in the following way.
+
+=over
+
+=item *
+
+It connects to the proxy, and tells the proxy to connect to the final
+destination, C<$host> and C<$port>.
+
+=item *
+
+It runs C<$connect_cb> after the connection to the proxy AND
+(hopefully) the connection between the proxy and the final destination
+are both established. The filehandle passed to C<$connect_cb> is the
+one to the proxy.
+
+=item *
+
+If the TCP connection to the proxy is established but the connection
+to the final destination fails for some reason, C<$connect_cb> is
+called with no argument passed (just as the original C<tcp_connect>
+does).
+
+=item *
+
+If given, it runs C<$prepare_cb> before it starts connecting to the
+proxy.
+
+=back
 
 =head2 $proxy = $conn->proxy_for($host, $port)
 
