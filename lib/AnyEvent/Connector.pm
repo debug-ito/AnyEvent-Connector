@@ -85,7 +85,7 @@ created.
 
 For example, if C<"http"> is specified, C<http_proxy> (or
 C<HTTP_PROXY>) and C<no_proxy> (or C<NO_PROXY>) environment variables
-are used to set C<proxy> and C<no_proxy> options.
+are used to set C<proxy> and C<no_proxy> options, respectively.
 
 C<proxy> and C<no_proxy> options have precedence over C<env_proxy>
 option.
@@ -136,9 +136,9 @@ proxy.
 
 =head2 $proxy = $conn->proxy_for($host, $port)
 
-If a proxy is used for connecting to the given C<$host> and C<$port>,
-it returns the string of the proxy URL. Otherwise, it returns
-C<undef>.
+If C<$conn> uses a proxy to connect to the given C<$host> and
+C<$port>, it returns the string of the proxy URL. Otherwise, it
+returns C<undef>.
 
 
 =head1 SEE ALSO
