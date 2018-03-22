@@ -1,8 +1,50 @@
 package AnyEvent::Connector;
 use strict;
 use warnings;
+use Carp qw(croak);
 
 our $VERSION = "0.01";
+
+sub new {
+    my ($class, %args) = @_;
+    my $self = bless {
+        proxy => undef,
+        no_proxy => []
+    }, $class;
+    $self->_env_proxy_for($args{env_proxy});
+    my $proxy = $args{proxy};
+    if(defined($proxy)) {
+        $self->{proxy} = ($proxy eq "") ? undef : $proxy;
+    }
+    my $no_proxy = $args{no_proxy};
+    if(defined($no_proxy)) {
+        my $ref = ref($no_proxy);
+        if($ref eq "ARRAY") {
+            ;
+        }elsif(!$ref) {
+            $no_proxy = [$no_proxy];
+        }else {
+            croak "no_proxy expects STRING or ARRAYREF, but it was $ref";
+        }
+        $self->{no_proxy} = [grep {$_ ne ""} @$no_proxy];
+    }
+    return $self;
+}
+
+sub _env_proxy_for {
+    my ($self, $protocol) = @_;
+    return if !defined($protocol);
+}
+
+sub proxy_for {
+    my ($self, $host, $port) = @_;
+    foreach my $no_domain (@{$self->{no_proxy}}) {
+        if($host =~ /\Q$no_domain\E$/) {
+            return undef;
+        }
+    }
+    return $self->{proxy};
+}
 
 1;
 __END__
