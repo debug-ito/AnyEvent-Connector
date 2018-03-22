@@ -12,28 +12,59 @@ sub new {
         no_proxy => []
     }, $class;
     $self->_env_proxy_for($args{env_proxy});
+    $self->_env_no_proxy();
     my $proxy = $args{proxy};
     if(defined($proxy)) {
-        $self->{proxy} = ($proxy eq "") ? undef : $proxy;
+        $self->_set_proxy($proxy);
     }
     my $no_proxy = $args{no_proxy};
     if(defined($no_proxy)) {
-        my $ref = ref($no_proxy);
-        if($ref eq "ARRAY") {
-            ;
-        }elsif(!$ref) {
-            $no_proxy = [$no_proxy];
-        }else {
-            croak "no_proxy expects STRING or ARRAYREF, but it was $ref";
-        }
-        $self->{no_proxy} = [grep {$_ ne ""} @$no_proxy];
+        $self->_set_no_proxy($no_proxy);
     }
     return $self;
+}
+
+sub _set_proxy {
+    my ($self, $proxy) = @_;
+    ## TODO: maybe parsing $proxy into URL and checking the schema will be necessary
+    $self->{proxy} = ($proxy eq "") ? undef : $proxy;
+}
+
+sub _set_no_proxy {
+    my ($self, $no_proxy) = @_;
+    my $ref = ref($no_proxy);
+    if($ref eq "ARRAY") {
+        ;
+    }elsif(!$ref) {
+        $no_proxy = [$no_proxy];
+    }else {
+        croak "no_proxy expects STRING or ARRAYREF, but it was $ref";
+    }
+    $self->{no_proxy} = [grep {$_ ne ""} @$no_proxy];
 }
 
 sub _env_proxy_for {
     my ($self, $protocol) = @_;
     return if !defined($protocol);
+    my @keys = (lc($protocol) . "_proxy", uc($protocol) . "_PROXY");
+    foreach my $key (@keys) {
+        my $p = $ENV{$key};
+        if(defined($p)) {
+            $self->_set_proxy($p);
+            return;
+        }
+    }
+}
+
+sub _env_no_proxy {
+    my ($self) = @_;
+    foreach my $key (qw(no_proxy NO_PROXY)) {
+        my $no_proxy = $ENV{$key};
+        if(defined($no_proxy)) {
+            $self->_set_no_proxy([split /\s*,\s*/, $no_proxy]);
+            return;
+        }
+    }
 }
 
 sub proxy_for {
