@@ -1,6 +1,9 @@
 
 on 'test' => sub {
     requires 'Test::More' => "0";
+    requires "Net::EmptyPort";
+    requires "AnyEvent::Socket";
+    requires "AnyEvent::Handle";
 };
 
 on 'configure' => sub {
