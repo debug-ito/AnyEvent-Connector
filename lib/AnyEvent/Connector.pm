@@ -2,13 +2,18 @@ package AnyEvent::Connector;
 use strict;
 use warnings;
 use Carp qw(croak);
+use AnyEvent::Socket ();
+use URI;
+
+use AnyEvent::Connector::Proxy::http;
+
 
 our $VERSION = "0.01";
 
 sub new {
     my ($class, %args) = @_;
     my $self = bless {
-        proxy => undef,
+        proxy_obj => undef,
         no_proxy => []
     }, $class;
     $self->_env_proxy_for($args{env_proxy});
@@ -26,8 +31,16 @@ sub new {
 
 sub _set_proxy {
     my ($self, $proxy) = @_;
-    ## TODO: maybe parsing $proxy into URL and checking the schema will be necessary
-    $self->{proxy} = ($proxy eq "") ? undef : $proxy;
+    if($proxy eq "") {
+        $self->{proxy_obj} = undef;
+        return;
+    }
+    my $proxy_uri = URI->new($proxy);
+    my $scheme = $proxy_uri->scheme;
+    if(!defined($scheme) || $scheme ne "http") {
+        croak "Only http proxy is supported: $proxy";
+    }
+    $self->{proxy_obj} = AnyEvent::Connector::Proxy::http->new($proxy_uri);
 }
 
 sub _set_no_proxy {
@@ -74,7 +87,14 @@ sub proxy_for {
             return undef;
         }
     }
-    return $self->{proxy};
+    my $p = $self->{proxy_obj};
+    return defined($p) ? $p->uri_string : undef;
+}
+
+sub tcp_connect {
+    my ($self, $host, $port, $connect_cb, $prepare_cb) = @_;
+    ## TODO
+    return;
 }
 
 1;

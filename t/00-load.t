@@ -3,10 +3,11 @@ use strict;
 use warnings;
 use Test::More;
  
-plan tests => 1;
+plan tests => 2;
  
 BEGIN {
-    use_ok( 'AnyEvent::Connector' ) || print "Bail out!\n";
+    use_ok('AnyEvent::Connector');
+    use_ok('AnyEvent::Connector::Proxy::http');
 }
  
 diag( "Testing AnyEvent::Connector $AnyEvent::Connector::VERSION, Perl $], $^X" );
