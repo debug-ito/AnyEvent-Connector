@@ -15,6 +15,16 @@ sub uri_string {
     return $self->{uri}->as_string;
 }
 
+sub host {
+    my ($self) = @_;
+    return $self->{uri}->host;
+}
+
+sub port {
+    my ($self) = @_;
+    return $self->{uri}->port;
+}
+
 
 1;
 

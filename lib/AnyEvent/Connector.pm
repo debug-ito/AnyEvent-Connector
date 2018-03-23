@@ -93,8 +93,13 @@ sub proxy_for {
 
 sub tcp_connect {
     my ($self, $host, $port, $connect_cb, $prepare_cb) = @_;
-    ## TODO
-    return;
+    my $proxy = $self->proxy_for($host, $port);
+    if(!defined($proxy)) {
+        return AnyEvent::Socket::tcp_connect $host, $port, $connect_cb, $prepare_cb;
+    }
+    return AnyEvent::Socket::tcp_connect $proxy->host, $proxy->port, sub {
+        ## TODO: what $host and $port should we pass to $connect_cb???
+    }, $prepare_cb;
 }
 
 1;
