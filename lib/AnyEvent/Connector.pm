@@ -220,8 +220,12 @@ destination, C<$host> and C<$port>.
 
 It runs C<$connect_cb> after the connection to the proxy AND
 (hopefully) the connection between the proxy and the final destination
-are both established. The filehandle passed to C<$connect_cb> is the
-one to the proxy.
+are both established.
+
+    $connect_cb->($cb_fh, $cb_host, $cb_port, $cb_retry)
+
+C<$cb_fh> is the filehandle to the proxy. C<$cb_host> and C<$cb_port>
+are the hostname and port of the proxy.
 
 =item *
 

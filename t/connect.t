@@ -56,8 +56,9 @@ subtest 'successful echo proxy', sub {
         proxy => "http://127.0.0.1:$proxy_port"
     );
     my $client_cv = AnyEvent->condvar;
+    my ($got_host, $got_port);
     $conn->tcp_connect("this.never.exist.i.guess.com", 5500, sub {
-        my ($fh) = @_;
+        (my $fh, $got_host, $got_port) = @_;
         my $ah;
         $ah = AnyEvent::Handle->new(
             fh => $fh,
@@ -81,6 +82,8 @@ subtest 'successful echo proxy', sub {
     my $client_got = $client_cv->recv();
     my $proxy_got = $proxy_cv->recv();
     is $client_got, "data submitted";
+    is $got_host, "127.0.0.1";
+    is $got_port, $proxy_port;
     fail("TODO: check proxy_got");
 };
 
