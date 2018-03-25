@@ -98,7 +98,9 @@ subtest 'successful echo proxy', sub {
     is $client_got, "data submitted";
     is $got_host, "127.0.0.1";
     is $got_port, $proxy_port;
-    fail("TODO: check proxy_got");
+    is $proxy_got->[0], "CONNECT this.never.exist.i.guess.com:5500 HTTP/1.1\r\nHost: this.never.exist.i.guess.com:5500\r\n\r\n";
+    is $proxy_got->[1], "data submitted\n";
+    is_deeply $proxy_got->[2], [];
 };
 
 done_testing;
