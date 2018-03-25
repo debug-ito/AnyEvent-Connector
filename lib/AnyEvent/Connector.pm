@@ -103,7 +103,11 @@ sub tcp_connect {
         return AnyEvent::Socket::tcp_connect $host, $port, $connect_cb, $prepare_cb;
     }
     return AnyEvent::Socket::tcp_connect $proxy->host, $proxy->port, sub {
-        ## TODO: what $host and $port should we pass to $connect_cb???
+        my ($fh, $conn_host, $conn_port, $retry) = @_;
+        $proxy->establish_proxy($fh, $host, $port, sub {
+            my ($success) = @_;
+            $connect_cb->($success ? ($fh, $conn_host, $conn_port, $retry) : ());
+        });
     }, $prepare_cb;
 }
 

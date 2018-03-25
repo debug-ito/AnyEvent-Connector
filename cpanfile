@@ -1,5 +1,6 @@
 
 requires "AnyEvent::Socket";
+requires "AnyEvent::Handle";
 requires "URI";
 
 on 'test' => sub {
