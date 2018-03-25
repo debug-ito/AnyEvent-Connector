@@ -80,20 +80,25 @@ sub _env_no_proxy {
     }
 }
 
-sub proxy_for {
+sub _proxy_uri_for {
     my ($self, $host, $port) = @_;
     foreach my $no_domain (@{$self->{no_proxy}}) {
         if($host =~ /\Q$no_domain\E$/) {
             return undef;
         }
     }
-    my $p = $self->{proxy_obj};
+    return $self->{proxy_obj};
+}
+
+sub proxy_for {
+    my ($self, $host, $port) = @_;
+    my $p = $self->_proxy_uri_for($host, $port);
     return defined($p) ? $p->uri_string : undef;
 }
 
 sub tcp_connect {
     my ($self, $host, $port, $connect_cb, $prepare_cb) = @_;
-    my $proxy = $self->proxy_for($host, $port);
+    my $proxy = $self->_proxy_uri_for($host, $port);
     if(!defined($proxy)) {
         return AnyEvent::Socket::tcp_connect $host, $port, $connect_cb, $prepare_cb;
     }
