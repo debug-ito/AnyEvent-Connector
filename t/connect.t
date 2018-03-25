@@ -38,10 +38,13 @@ sub setup_echo_proxy {
             on_error => sub {
                 my ($h, $fatal, $msg) = @_;
                 push @error, [$fatal, $msg];
+                $ah->destroy();
                 undef $ah;
                 $finish->();
             },
             on_eof => sub {
+                $ah->destroy();
+                undef $ah;
                 $finish->();
             },
             on_read => $cb_receive_conn
@@ -64,6 +67,7 @@ subtest 'successful echo proxy', sub {
             fh => $fh,
             on_error => sub {
                 my ($h, $fatal, $msg) = @_;
+                $ah->destroy();
                 undef $ah;
                 $client_cv->croak($fatal, $msg);
             },
@@ -73,11 +77,21 @@ subtest 'successful echo proxy', sub {
             },
             on_read => sub {
                 my ($h) = @_;
+                my $data = delete $h->{rbuf};
+                $ah->push_shutdown();
+                $ah->destroy();
                 undef $ah;
                 $client_cv->send(delete $h->{rbuf});
             }
         );
-        $ah->push_write("data submitted");
+        $ah->push_write("data submitted\n");
+        $ah->push_read(line => sub {
+            my ($h, $line) = @_;
+            $ah->push_shutdown();
+            $ah->destroy();
+            undef $ah;
+            $client_cv->send($line);
+        });
     });
     my $client_got = $client_cv->recv();
     my $proxy_got = $proxy_cv->recv();
