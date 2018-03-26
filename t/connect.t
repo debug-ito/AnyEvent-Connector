@@ -53,6 +53,32 @@ sub setup_echo_proxy {
     return ($port, $server, $cv);
 }
 
+sub setup_closing_proxy {
+    my $port = empty_port();
+    my $server = tcp_server '127.0.0.1', $port, sub {
+        my ($fh) = @_;
+        my $ah;
+        $ah = AnyEvent::Handle->new(
+            fh => $fh,
+            on_error => sub {
+                $ah->push_shutdown();
+                undef $ah;
+                close $fh;
+                undef $fh;
+            },
+        );
+        $ah->push_read(line => sub {
+            my ($h) = @_;
+            $h->push_shutdown();
+            undef $h;
+            close $fh;
+            undef $fh;
+        });
+    };
+    return ($port, $server);
+}
+
+
 subtest 'successful echo proxy', sub {
     my ($proxy_port, $proxy_guard, $proxy_cv) = setup_echo_proxy();
     my $conn = AnyEvent::Connector->new(
@@ -101,6 +127,20 @@ subtest 'successful echo proxy', sub {
     is $proxy_got->[0], "CONNECT this.never.exist.i.guess.com:5500 HTTP/1.1\r\nHost: this.never.exist.i.guess.com:5500\r\n\r\n";
     is $proxy_got->[1], "data submitted\n";
     is_deeply $proxy_got->[2], [];
+};
+
+subtest "proxy error", sub {
+    my ($proxy_port, $proxy_guard) = setup_closing_proxy();
+    my $conn = AnyEvent::Connector->new(
+        proxy => "http://127.0.0.1:$proxy_port"
+    );
+    my $client_cv = AnyEvent->condvar;
+    $conn->tcp_connect("foo.bar.com", 1888, sub {
+        my (@args) = @_;
+        $client_cv->send(\@args);
+    });
+    my $client_got = $client_cv->recv();
+    is_deeply $client_got, [], "no arg passed to connect_cb because of proxy error";
 };
 
 done_testing;
