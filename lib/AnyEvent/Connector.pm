@@ -104,6 +104,10 @@ sub tcp_connect {
     }
     return AnyEvent::Socket::tcp_connect $proxy->host, $proxy->port, sub {
         my ($fh, $conn_host, $conn_port, $retry) = @_;
+        if(!defined($fh)) {
+            $connect_cb->();
+            return;
+        }
         $proxy->establish_proxy($fh, $host, $port, sub {
             my ($success) = @_;
             $connect_cb->($success ? ($fh, $conn_host, $conn_port, $retry) : ());

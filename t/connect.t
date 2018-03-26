@@ -143,4 +143,18 @@ subtest "proxy error", sub {
     is_deeply $client_got, [], "no arg passed to connect_cb because of proxy error";
 };
 
+subtest "proxy not exist", sub {
+    my $no_port = empty_port();
+    my $conn = AnyEvent::Connector->new(
+        proxy => "http://127.0.0.1:$no_port"
+    );
+    my $client_cv = AnyEvent->condvar;
+    $conn->tcp_connect("foo.bar.com", 1888, sub {
+        my (@args) = @_;
+        $client_cv->send(\@args);
+    });
+    my $client_got = $client_cv->recv();
+    is_deeply $client_got, [], "no arg passed to connect_cb because there is no proxy listening.";
+};
+
 done_testing;
