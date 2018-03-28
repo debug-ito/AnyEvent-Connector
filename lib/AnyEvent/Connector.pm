@@ -17,7 +17,6 @@ sub new {
         no_proxy => []
     }, $class;
     $self->_env_proxy_for($args{env_proxy});
-    $self->_env_no_proxy();
     my $proxy = $args{proxy};
     if(defined($proxy)) {
         $self->_set_proxy($proxy);
@@ -59,6 +58,7 @@ sub _set_no_proxy {
 sub _env_proxy_for {
     my ($self, $protocol) = @_;
     return if !defined($protocol);
+    $self->_env_no_proxy();
     my @keys = (lc($protocol) . "_proxy", uc($protocol) . "_PROXY");
     foreach my $key (@keys) {
         my $p = $ENV{$key};
