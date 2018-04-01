@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
+use Test::NoWarnings;
 use Net::EmptyPort qw(empty_port);
 use AnyEvent::Socket qw(tcp_server);
 use AnyEvent::Handle;
