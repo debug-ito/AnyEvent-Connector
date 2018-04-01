@@ -8,7 +8,6 @@ on 'test' => sub {
     requires "Net::EmptyPort";
     requires "AnyEvent::Socket";
     requires "AnyEvent::Handle";
-    requires "Test::NoWarnings";
 };
 
 on 'configure' => sub {

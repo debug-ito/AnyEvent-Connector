@@ -1,11 +1,13 @@
 use strict;
 use warnings;
 use Test::More;
-use Test::NoWarnings;
 use Net::EmptyPort qw(empty_port);
 use AnyEvent::Socket qw(tcp_server);
 use AnyEvent::Handle;
 use AnyEvent::Connector;
+
+my @warnings;
+$SIG{__WARN__} = sub { push @warnings, $_[0] };
 
 sub setup_echo_proxy {
     my $port = empty_port();
@@ -197,5 +199,7 @@ subtest "proxy sending junk", sub {
     my $client_got = $client_cv->recv();
     is_deeply $client_got, [], "proxy sending junk causes failure.";
 };
+
+is_deeply \@warnings, [], "no warnings";
 
 done_testing;
