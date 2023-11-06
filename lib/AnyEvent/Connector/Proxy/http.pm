@@ -49,6 +49,7 @@ sub establish_proxy {
         if($line eq "") {
             $ah->destroy();
             undef $ah;
+            undef $header_reader;
             $cb->(1);
             return;
         }
@@ -59,6 +60,7 @@ sub establish_proxy {
         if($line !~ qr{^HTTP/1\S* +(\d{3})}) {
             $ah->destroy();
             undef $ah;
+            undef $header_reader;
             $cb->(0);
             return;
         }
@@ -66,6 +68,7 @@ sub establish_proxy {
         if(int($status / 100) != 2) {
             $ah->destroy();
             undef $ah;
+            undef $header_reader;
             $cb->(0);
             return;
         }
